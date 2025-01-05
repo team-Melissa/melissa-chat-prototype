@@ -1,4 +1,4 @@
-import openai from "@/openaiClient";
+import openai, { getTestAssistantId } from "@/openaiClient";
 import { useEffect, useState } from "react";
 
 export const useCheckAssistant = () => {
@@ -10,15 +10,7 @@ export const useCheckAssistant = () => {
         console.log(
           "server test assistant를 활용해 openAI API에서 스레드 생성, 메시지 추가, run이 가능한지 확인"
         );
-        // 어시스턴트 리스트를 가져옴
-        const myAssistants = await openai.beta.assistants.list({
-          order: "desc",
-        });
-
-        // server test 용 어시스턴트 id를 가져옴
-        const assistantId = myAssistants.data.filter(
-          (d) => d.name === "server test"
-        )[0].id;
+        const assistantId = await getTestAssistantId();
 
         // 스레드 생성 && 스레드에 메시지 추가 && 어시스턴트에 스레드를 넣고 run 수행을 한번에 진행
         console.time("한번에 실행 createAndRun");
