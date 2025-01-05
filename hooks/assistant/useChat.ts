@@ -1,7 +1,8 @@
+import EventSource from "react-native-sse";
+import { useEffect, useState } from "react";
 import { getItem, setItem } from "@/asyncStorage";
 import openai from "@/openaiClient";
 import { getDiscardThreadTime } from "@/utils/time";
-import { useEffect, useState } from "react";
 
 type Chat = {
   role: "assistant" | "user";
@@ -12,6 +13,20 @@ type DiaryThread = {
   threadId: string;
   createdAt: number;
 };
+
+type AssistantEvents =
+  | "thread.run.created"
+  | "thread.run.queued"
+  | "thread.run.in_progress"
+  | "thread.run.step.created"
+  | "thread.run.step.in_progress"
+  | "thread.message.created"
+  | "thread.message.in_progress"
+  | "thread.message.delta"
+  | "thread.message.completed"
+  | "thread.run.step.completed"
+  | "thread.run.completed"
+  | "done";
 
 export const useChat = () => {
   const [input, setInput] = useState<string>("");
@@ -33,21 +48,59 @@ export const useChat = () => {
       content: input,
     });
 
-    let run = await openai.beta.threads.runs.createAndPoll(threadId, {
-      assistant_id: assistantId,
+    setInput("");
+
+    // 메시지 state에 반영
+    setChats((prev) => [...prev, { role: "user", text: input }]);
+
+    // 이벤트 스트림 열고 스트림 허용 상태로 run 수행!
+    const es = new EventSource<AssistantEvents>(
+      `https://api.openai.com/v1/threads/${threadId}/runs`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "OpenAI-Beta": "assistants=v2",
+          Authorization: `Bearer ${process.env.EXPO_PUBLIC_OPENAI_API_KEY}`,
+        },
+        method: "POST",
+        body: JSON.stringify({
+          assistant_id: assistantId,
+          stream: true,
+        }),
+        pollingInterval: 0,
+      }
+    );
+
+    es.addEventListener("thread.run.created", () => {
+      console.log("run 생성 완료! chat 데이터에 어시스턴트 필드 추가");
+      setChats((prev) => [...prev, { role: "assistant", text: "" }]);
     });
 
-    if (run.status === "completed") {
-      const messages = await openai.beta.threads.messages.list(run.thread_id);
+    es.addEventListener("thread.message.delta", (event) => {
+      console.log("스트림 메시지 수신");
+      if (event.data) {
+        const data = JSON.parse(event.data);
+        setChats((prev) => {
+          const last = prev[prev.length - 1];
+          const newLast = {
+            ...last,
+            text: last.text + data.delta.content[0].text.value,
+          };
+          prev.pop();
+          return [...prev, newLast];
+        });
+      }
+    });
 
-      console.log(messages);
+    es.addEventListener("error", (error) => {
+      console.error("SSE Error:", error);
+    });
 
-      setChats(
-        messages.data
-          .reverse()
-          .map((m) => ({ role: m.role, text: m.content[0].text.value }))
-      );
-    }
+    es.addEventListener("done", () => {
+      console.log("모든 run 수행 완료! 이벤트 리스너와 see 연결 해제");
+      es.removeAllEventListeners();
+      es.close();
+    });
   };
 
   useEffect(() => {
