@@ -1,3 +1,4 @@
+import { useCheckAssistant } from "@/hooks/assistant/useCheckAssistant";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { useEffect } from "react";
@@ -10,9 +11,18 @@ export default function RootLayout() {
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
-  useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
-  }, [loaded]);
+  // const isAble = useCheckAssistant(); // GPT assistant API 이용이 가능한지 체크해주는 커스텀 훅
 
-  return <Stack />;
+  useEffect(() => {
+    // if (loaded && isAble !== undefined) SplashScreen.hideAsync();
+    SplashScreen.hideAsync();
+  }, []);
+
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    />
+  );
 }

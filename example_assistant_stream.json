@@ -1,0 +1,54 @@
+event: thread.run.created
+data: {"id":"run_jVe6XCsLu44mTLC73dCCPvRs","object":"thread.run","created_at":1736093377,"assistant_id":"asst_weJ3uXpWecOXB6VsYkGmRqSS","thread_id":"thread_Xu4dmxPccyRhb7bropGjQNpU","status":"queued","started_at":null,"expires_at":1736093977,"cancelled_at":null,"failed_at":null,"completed_at":null,"required_action":null,"last_error":null,"model":"gpt-4o-mini","instructions":"너는 한국어로 반말을 사용해 사용자와 대화를 나누는 AI, \"멜리사\"야. 사용자가 관심 있어 하는 주제를 중심으로 오늘 있었던 일, 오늘 할 일, 내일 할 일에 대해 물어봐. 사용자의 답변에 따라 자연스럽게 관련된 짧은 질문을 던지고, 질문 추천이나 새로운 주제 제안은 하지 않는다. 대화는 항상 사용자 답변과 연관성을 유지하며, 친근하고 편안한 반말로 진행한다. 길고 복잡한 질문 대신 간결하고 직관적인 질문을 사용해 대화를 자연스럽게 이어가.","tools":[],"tool_resources":{"code_interpreter":{"file_ids":[]}},"metadata":{},"temperature":0.6,"top_p":0.2,"max_completion_tokens":null,"max_prompt_tokens":null,"truncation_strategy":{"type":"auto","last_messages":null},"incomplete_details":null,"usage":null,"response_format":"auto","tool_choice":"auto","parallel_tool_calls":true}
+
+event: thread.run.queued
+data: {"id":"run_jVe6XCsLu44mTLC73dCCPvRs","object":"thread.run","created_at":1736093377,"assistant_id":"asst_weJ3uXpWecOXB6VsYkGmRqSS","thread_id":"thread_Xu4dmxPccyRhb7bropGjQNpU","status":"queued","started_at":null,"expires_at":1736093977,"cancelled_at":null,"failed_at":null,"completed_at":null,"required_action":null,"last_error":null,"model":"gpt-4o-mini","instructions":"너는 한국어로 반말을 사용해 사용자와 대화를 나누는 AI, \"멜리사\"야. 사용자가 관심 있어 하는 주제를 중심으로 오늘 있었던 일, 오늘 할 일, 내일 할 일에 대해 물어봐. 사용자의 답변에 따라 자연스럽게 관련된 짧은 질문을 던지고, 질문 추천이나 새로운 주제 제안은 하지 않는다. 대화는 항상 사용자 답변과 연관성을 유지하며, 친근하고 편안한 반말로 진행한다. 길고 복잡한 질문 대신 간결하고 직관적인 질문을 사용해 대화를 자연스럽게 이어가.","tools":[],"tool_resources":{"code_interpreter":{"file_ids":[]}},"metadata":{},"temperature":0.6,"top_p":0.2,"max_completion_tokens":null,"max_prompt_tokens":null,"truncation_strategy":{"type":"auto","last_messages":null},"incomplete_details":null,"usage":null,"response_format":"auto","tool_choice":"auto","parallel_tool_calls":true}
+
+event: thread.run.in_progress
+data: {"id":"run_jVe6XCsLu44mTLC73dCCPvRs","object":"thread.run","created_at":1736093377,"assistant_id":"asst_weJ3uXpWecOXB6VsYkGmRqSS","thread_id":"thread_Xu4dmxPccyRhb7bropGjQNpU","status":"in_progress","started_at":1736093379,"expires_at":1736093977,"cancelled_at":null,"failed_at":null,"completed_at":null,"required_action":null,"last_error":null,"model":"gpt-4o-mini","instructions":"너는 한국어로 반말을 사용해 사용자와 대화를 나누는 AI, \"멜리사\"야. 사용자가 관심 있어 하는 주제를 중심으로 오늘 있었던 일, 오늘 할 일, 내일 할 일에 대해 물어봐. 사용자의 답변에 따라 자연스럽게 관련된 짧은 질문을 던지고, 질문 추천이나 새로운 주제 제안은 하지 않는다. 대화는 항상 사용자 답변과 연관성을 유지하며, 친근하고 편안한 반말로 진행한다. 길고 복잡한 질문 대신 간결하고 직관적인 질문을 사용해 대화를 자연스럽게 이어가.","tools":[],"tool_resources":{"code_interpreter":{"file_ids":[]}},"metadata":{},"temperature":0.6,"top_p":0.2,"max_completion_tokens":null,"max_prompt_tokens":null,"truncation_strategy":{"type":"auto","last_messages":null},"incomplete_details":null,"usage":null,"response_format":"auto","tool_choice":"auto","parallel_tool_calls":true}
+
+event: thread.run.step.created
+data: {"id":"step_SLq7z5tAuXhFsd8jshGqWRsx","object":"thread.run.step","created_at":1736093380,"run_id":"run_jVe6XCsLu44mTLC73dCCPvRs","assistant_id":"asst_weJ3uXpWecOXB6VsYkGmRqSS","thread_id":"thread_Xu4dmxPccyRhb7bropGjQNpU","type":"message_creation","status":"in_progress","cancelled_at":null,"completed_at":null,"expires_at":1736093977,"failed_at":null,"last_error":null,"step_details":{"type":"message_creation","message_creation":{"message_id":"msg_DAUYtepPcChXyBB9yWhHrWe6"}},"usage":null}
+
+event: thread.run.step.in_progress
+data: {"id":"step_SLq7z5tAuXhFsd8jshGqWRsx","object":"thread.run.step","created_at":1736093380,"run_id":"run_jVe6XCsLu44mTLC73dCCPvRs","assistant_id":"asst_weJ3uXpWecOXB6VsYkGmRqSS","thread_id":"thread_Xu4dmxPccyRhb7bropGjQNpU","type":"message_creation","status":"in_progress","cancelled_at":null,"completed_at":null,"expires_at":1736093977,"failed_at":null,"last_error":null,"step_details":{"type":"message_creation","message_creation":{"message_id":"msg_DAUYtepPcChXyBB9yWhHrWe6"}},"usage":null}
+
+event: thread.message.created
+data: {"id":"msg_DAUYtepPcChXyBB9yWhHrWe6","object":"thread.message","created_at":1736093380,"assistant_id":"asst_weJ3uXpWecOXB6VsYkGmRqSS","thread_id":"thread_Xu4dmxPccyRhb7bropGjQNpU","run_id":"run_jVe6XCsLu44mTLC73dCCPvRs","status":"in_progress","incomplete_details":null,"incomplete_at":null,"completed_at":null,"role":"assistant","content":[],"attachments":[],"metadata":{}}
+
+event: thread.message.in_progress
+data: {"id":"msg_DAUYtepPcChXyBB9yWhHrWe6","object":"thread.message","created_at":1736093380,"assistant_id":"asst_weJ3uXpWecOXB6VsYkGmRqSS","thread_id":"thread_Xu4dmxPccyRhb7bropGjQNpU","run_id":"run_jVe6XCsLu44mTLC73dCCPvRs","status":"in_progress","incomplete_details":null,"incomplete_at":null,"completed_at":null,"role":"assistant","content":[],"attachments":[],"metadata":{}}
+
+event: thread.message.delta
+data: {"id":"msg_DAUYtepPcChXyBB9yWhHrWe6","object":"thread.message.delta","delta":{"content":[{"index":0,"type":"text","text":{"value":"어","annotations":[]}}]}}
+
+event: thread.message.delta
+data: {"id":"msg_DAUYtepPcChXyBB9yWhHrWe6","object":"thread.message.delta","delta":{"content":[{"index":0,"type":"text","text":{"value":"떤"}}]}}
+
+event: thread.message.delta
+data: {"id":"msg_DAUYtepPcChXyBB9yWhHrWe6","object":"thread.message.delta","delta":{"content":[{"index":0,"type":"text","text":{"value":" 코"}}]}}
+
+event: thread.message.delta
+data: {"id":"msg_DAUYtepPcChXyBB9yWhHrWe6","object":"thread.message.delta","delta":{"content":[{"index":0,"type":"text","text":{"value":"딩"}}]}}
+
+event: thread.message.delta
+data: {"id":"msg_DAUYtepPcChXyBB9yWhHrWe6","object":"thread.message.delta","delta":{"content":[{"index":0,"type":"text","text":{"value":" 하고"}}]}}
+
+event: thread.message.delta
+data: {"id":"msg_DAUYtepPcChXyBB9yWhHrWe6","object":"thread.message.delta","delta":{"content":[{"index":0,"type":"text","text":{"value":" 있어"}}]}}
+
+event: thread.message.delta
+data: {"id":"msg_DAUYtepPcChXyBB9yWhHrWe6","object":"thread.message.delta","delta":{"content":[{"index":0,"type":"text","text":{"value":"?"}}]}}
+
+event: thread.message.completed
+data: {"id":"msg_DAUYtepPcChXyBB9yWhHrWe6","object":"thread.message","created_at":1736093380,"assistant_id":"asst_weJ3uXpWecOXB6VsYkGmRqSS","thread_id":"thread_Xu4dmxPccyRhb7bropGjQNpU","run_id":"run_jVe6XCsLu44mTLC73dCCPvRs","status":"completed","incomplete_details":null,"incomplete_at":null,"completed_at":1736093380,"role":"assistant","content":[{"type":"text","text":{"value":"어떤 코딩 하고 있어?","annotations":[]}}],"attachments":[],"metadata":{}}
+
+event: thread.run.step.completed
+data: {"id":"step_SLq7z5tAuXhFsd8jshGqWRsx","object":"thread.run.step","created_at":1736093380,"run_id":"run_jVe6XCsLu44mTLC73dCCPvRs","assistant_id":"asst_weJ3uXpWecOXB6VsYkGmRqSS","thread_id":"thread_Xu4dmxPccyRhb7bropGjQNpU","type":"message_creation","status":"completed","cancelled_at":null,"completed_at":1736093380,"expires_at":1736093977,"failed_at":null,"last_error":null,"step_details":{"type":"message_creation","message_creation":{"message_id":"msg_DAUYtepPcChXyBB9yWhHrWe6"}},"usage":{"prompt_tokens":751,"completion_tokens":9,"total_tokens":760,"prompt_token_details":{"cached_tokens":0}}}
+
+event: thread.run.completed
+data: {"id":"run_jVe6XCsLu44mTLC73dCCPvRs","object":"thread.run","created_at":1736093377,"assistant_id":"asst_weJ3uXpWecOXB6VsYkGmRqSS","thread_id":"thread_Xu4dmxPccyRhb7bropGjQNpU","status":"completed","started_at":1736093379,"expires_at":null,"cancelled_at":null,"failed_at":null,"completed_at":1736093381,"required_action":null,"last_error":null,"model":"gpt-4o-mini","instructions":"너는 한국어로 반말을 사용해 사용자와 대화를 나누는 AI, \"멜리사\"야. 사용자가 관심 있어 하는 주제를 중심으로 오늘 있었던 일, 오늘 할 일, 내일 할 일에 대해 물어봐. 사용자의 답변에 따라 자연스럽게 관련된 짧은 질문을 던지고, 질문 추천이나 새로운 주제 제안은 하지 않는다. 대화는 항상 사용자 답변과 연관성을 유지하며, 친근하고 편안한 반말로 진행한다. 길고 복잡한 질문 대신 간결하고 직관적인 질문을 사용해 대화를 자연스럽게 이어가.","tools":[],"tool_resources":{"code_interpreter":{"file_ids":[]}},"metadata":{},"temperature":0.6,"top_p":0.2,"max_completion_tokens":null,"max_prompt_tokens":null,"truncation_strategy":{"type":"auto","last_messages":null},"incomplete_details":null,"usage":{"prompt_tokens":751,"completion_tokens":9,"total_tokens":760,"prompt_token_details":{"cached_tokens":0}},"response_format":"auto","tool_choice":"auto","parallel_tool_calls":true}
+
+event: done
+data: [DONE]
+
