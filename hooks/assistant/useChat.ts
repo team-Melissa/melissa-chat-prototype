@@ -1,4 +1,3 @@
-import EventSource from "react-native-sse";
 import { useEffect, useState } from "react";
 import { getThread, setThread } from "@/asyncStorage";
 import {
@@ -8,8 +7,9 @@ import {
   getNewThread,
 } from "@/openaiClient";
 import { getDiscardThreadTime } from "@/utils/time";
-import { AssistantEvents, Chat, DiaryThread } from "@/app.types";
+import { Chat, DiaryThread } from "@/app.types";
 import { useStt } from "../useStt";
+import { handleEventSource } from "@/utils/handleEventSource";
 
 export const useChat = () => {
   const [input, setInput] = useState<string>("");
@@ -44,61 +44,15 @@ export const useChat = () => {
   const handleInputSubmit = async () => {
     if (!threadId || !assistantId) return;
 
-    // 스레드에 메시지 추가
-    await addMessage(threadId, input);
-
     // state들에 반영
     setInput("");
     setChats((prev) => [...prev, { role: "user", text: input }]); // chats 변경 로직은 어디 모아두는게 나을지도? 아직 아닌가? 고민
 
-    // 이벤트 스트림 열고 스트림 허용 상태로 run 수행
-    const es = new EventSource<AssistantEvents>(
-      `https://api.openai.com/v1/threads/${threadId}/runs`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "OpenAI-Beta": "assistants=v2",
-          Authorization: `Bearer ${process.env.EXPO_PUBLIC_OPENAI_API_KEY}`,
-        },
-        method: "POST",
-        body: JSON.stringify({
-          assistant_id: assistantId,
-          stream: true,
-        }),
-        pollingInterval: 0,
-      }
-    );
+    // 스레드에 메시지 추가
+    await addMessage(threadId, input);
 
-    es.addEventListener("thread.message.created", () => {
-      console.log("run 생성 완료! chat 데이터에 어시스턴트 필드 추가");
-      setChats((prev) => [...prev, { role: "assistant", text: "" }]);
-    });
-
-    es.addEventListener("thread.message.delta", (event) => {
-      console.log("스트림 메시지 수신");
-      if (event.data) {
-        const data = JSON.parse(event.data);
-        setChats((prev) => {
-          const last = prev[prev.length - 1];
-          const newLast = {
-            ...last,
-            text: last.text + data.delta.content[0].text.value,
-          };
-          prev.pop();
-          return [...prev, newLast];
-        });
-      }
-    });
-
-    es.addEventListener("error", (error) => {
-      console.error("SSE Error:", error);
-    });
-
-    es.addEventListener("done", () => {
-      console.log("모든 run 수행 완료! 이벤트 리스너와 see 연결 해제");
-      es.removeAllEventListeners();
-      es.close();
-    });
+    // 어시스턴트 답변 수신
+    handleEventSource(assistantId, threadId, setChats);
   };
 
   useEffect(() => {
@@ -137,7 +91,7 @@ export const useChat = () => {
     initializeAssistantApi();
   }, []);
 
-  useStt(isSpkMode, setChats);
+  useStt(isSpkMode, assistantId, threadId, setChats);
 
   return {
     input,
