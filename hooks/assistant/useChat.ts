@@ -36,12 +36,31 @@ type AssistantEvents =
 export const useChat = () => {
   const [input, setInput] = useState<string>("");
   const [chats, setChats] = useState<Chat[]>([]);
+  const [isSpkMode, setIsSpkMode] = useState<boolean>(false);
 
   const [assistantId, setAssistantId] = useState<string | null>(null);
   const [threadId, setThreadId] = useState<string | null>(null);
 
+  const btnText = isSpkMode
+    ? "음성 모드 끄기"
+    : input.length === 0
+    ? "음성 모드 켜기"
+    : "답변하기";
+
   const handleInputChange = (text: string) => {
     setInput(text);
+  };
+
+  const toggleSpkMode = () => {
+    setIsSpkMode((prev) => !prev);
+  };
+
+  const handleBtnClick = () => {
+    if (input.length === 0) {
+      toggleSpkMode();
+    } else {
+      handleInputSubmit();
+    }
   };
 
   const handleInputSubmit = async () => {
@@ -140,5 +159,12 @@ export const useChat = () => {
     initializeAssistantApi();
   }, []);
 
-  return { input, chats, handleInputChange, handleInputSubmit };
+  return {
+    input,
+    chats,
+    isSpkMode,
+    btnText,
+    handleInputChange,
+    handleBtnClick,
+  };
 };

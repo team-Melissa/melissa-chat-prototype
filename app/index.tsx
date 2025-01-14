@@ -3,7 +3,14 @@ import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index(): JSX.Element {
-  const { input, chats, handleInputChange, handleInputSubmit } = useChat();
+  const {
+    input,
+    chats,
+    isSpkMode,
+    btnText,
+    handleInputChange,
+    handleBtnClick,
+  } = useChat();
 
   return (
     <SafeAreaView>
@@ -12,12 +19,13 @@ export default function Index(): JSX.Element {
         style={{ height: 40, margin: 12, borderWidth: 1, padding: 10 }}
         onChangeText={handleInputChange}
         value={input}
+        editable={!isSpkMode}
       />
       <TouchableOpacity
         style={{ height: 40, margin: 12, borderWidth: 1, padding: 10 }}
-        onPress={handleInputSubmit}
+        onPress={handleBtnClick}
       >
-        <Text>전송</Text>
+        <Text>{btnText}</Text>
       </TouchableOpacity>
       {chats.map((chat, idx) => (
         <View key={idx}>
