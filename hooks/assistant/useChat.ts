@@ -8,30 +8,8 @@ import {
   getNewThread,
 } from "@/openaiClient";
 import { getDiscardThreadTime } from "@/utils/time";
-
-type Chat = {
-  role: "assistant" | "user";
-  text: string;
-};
-
-type DiaryThread = {
-  threadId: string;
-  createdAt: number;
-};
-
-type AssistantEvents =
-  | "thread.run.created"
-  | "thread.run.queued"
-  | "thread.run.in_progress"
-  | "thread.run.step.created"
-  | "thread.run.step.in_progress"
-  | "thread.message.created"
-  | "thread.message.in_progress"
-  | "thread.message.delta"
-  | "thread.message.completed"
-  | "thread.run.step.completed"
-  | "thread.run.completed"
-  | "done";
+import { AssistantEvents, Chat, DiaryThread } from "@/app.types";
+import { useStt } from "../useStt";
 
 export const useChat = () => {
   const [input, setInput] = useState<string>("");
@@ -71,7 +49,7 @@ export const useChat = () => {
 
     // state들에 반영
     setInput("");
-    setChats((prev) => [...prev, { role: "user", text: input }]);
+    setChats((prev) => [...prev, { role: "user", text: input }]); // chats 변경 로직은 어디 모아두는게 나을지도? 아직 아닌가? 고민
 
     // 이벤트 스트림 열고 스트림 허용 상태로 run 수행
     const es = new EventSource<AssistantEvents>(
@@ -158,6 +136,8 @@ export const useChat = () => {
 
     initializeAssistantApi();
   }, []);
+
+  useStt(isSpkMode, setChats);
 
   return {
     input,
