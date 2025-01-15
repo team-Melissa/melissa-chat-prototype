@@ -1,8 +1,11 @@
-import { Dispatch, SetStateAction, useEffect, useRef } from "react";
-import Voice, { SpeechResultsEvent } from "@react-native-voice/voice";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { Chat } from "@/app.types";
 import { handleEventSource } from "@/utils/handleEventSource";
 import { addMessage } from "@/openaiClient";
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from "expo-speech-recognition";
 
 export const useStt = (
   isSpkMode: boolean,
@@ -10,61 +13,83 @@ export const useStt = (
   threadId: string | null,
   setChats: Dispatch<SetStateAction<Chat[]>>
 ) => {
-  const recognizedTxtRef = useRef<string>("");
-  const isFinSpkRef = useRef<boolean>(true);
+  const recognizedTxt = useRef<string>("");
   const noSpkTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isRecord, setIsRecord] = useState<boolean>(false);
 
-  useEffect(() => {
-    const handleChats = (text: string, setState: typeof setChats) => {
-      if (isFinSpkRef.current) {
-        // 음성 인식 2초 이상 멈췄다가 다시 발생한 케이스 (새로운 user 필드를 만들어야 하는 상황)
-        isFinSpkRef.current = false;
-        setState((prev) =>
-          prev[prev.length - 1].text === text
-            ? prev
-            : [...prev, { role: "user", text }]
-        );
-      } else {
-        // 음성 인식이 멈추기 전 발생한 케이스 (기존 마지막 user 필드의 텍스트만 업데이트 해야 하는 상황)
-        setState((prev) => [...prev.slice(0, -1), { role: "user", text }]);
-      }
-    };
+  // 음성 인식 시작되면 isRecord를 true로 변경하는 훅
+  useSpeechRecognitionEvent("start", () => {
+    console.log("음성 인식 켜짐");
+    recognizedTxt.current = "";
+    setIsRecord(true);
+  });
 
-    const handleTimeout = (
-      threadId: string,
-      assistantId: string,
-      setState: typeof setChats
-    ) => {
+  // 음성 인식 종료되면 isRecord를 false로 변경하는 훅
+  useSpeechRecognitionEvent("end", () => {
+    console.log("음성 인식 꺼짐");
+    setIsRecord(false);
+  });
+
+  // 음성 인식 결과가 날아오면 recognizedTxt에 반영하고, 기존 timeout을 제거하고, setChats에 반영하는 훅
+  useSpeechRecognitionEvent("result", (event) => {
+    if (event.results[0]?.transcript) {
+      recognizedTxt.current = event.results[0]?.transcript;
+
       if (noSpkTimerRef.current) clearTimeout(noSpkTimerRef.current);
 
-      noSpkTimerRef.current = setTimeout(async () => {
-        console.log("STT 일시 정지!", noSpkTimerRef.current);
-        isFinSpkRef.current = true;
-        Voice.destroy(); // 여기에 then 콜백 사용하니까 문제 발생했었음. 아래로 내리고 await 사용하기
-        await addMessage(threadId, recognizedTxtRef.current);
-        Voice.start("ko-kr");
-        handleEventSource(assistantId, threadId, setState);
-      }, 2000);
-    };
+      setChats((prev) =>
+        prev[prev.length - 1].role === "assistant"
+          ? [...prev, { role: "user", text: event.results[0]?.transcript }]
+          : [
+              ...prev.slice(0, -1),
+              { role: "user", text: event.results[0]?.transcript },
+            ]
+      );
 
-    if (isSpkMode && assistantId && threadId) {
-      Voice.onSpeechResults = (e: SpeechResultsEvent) => {
-        console.log("onSpeechResults 이벤트 실행", e);
-
-        if (e.value && e.value.length > 0) {
-          const text = e.value[0];
-          recognizedTxtRef.current = text; // 요청 날릴 때 사용할 음성인식 결과 텍스트 ref
-          handleChats(text, setChats);
-          handleTimeout(threadId, assistantId, setChats);
-        }
-      };
-      Voice.start("ko-kr");
-    } else {
-      Voice.destroy().then(Voice.removeAllListeners);
+      // 최종 값(stop 후 터지는 이벤트)이 아닐 때만 새 setTimeout 추가하기
+      if (!event.isFinal) {
+        noSpkTimerRef.current = setTimeout(() => {
+          console.log("2초간 말을 멈춰 콜백 실행", noSpkTimerRef.current);
+          ExpoSpeechRecognitionModule.stop();
+        }, 2000);
+      }
     }
+  });
 
-    return () => {
-      Voice.destroy().then(Voice.removeAllListeners);
+  useSpeechRecognitionEvent("error", (event) => {
+    console.log("error code:", event.error, "error message:", event.message);
+  });
+
+  // 버튼으로 음성 인식 온오프를 위한 effect
+  useEffect(() => {
+    if (isSpkMode) {
+      ExpoSpeechRecognitionModule.start({
+        lang: "ko-KR",
+        continuous: true,
+        interimResults: true,
+      });
+    } else {
+      ExpoSpeechRecognitionModule.stop();
+    }
+  }, [isSpkMode]);
+
+  // 음성 모드에서 음성 인식이 마쳐졌을 때 Run 수행하는 effect
+  useEffect(() => {
+    const submitChats = async () => {
+      if (isSpkMode && assistantId && threadId) {
+        if (!isRecord && recognizedTxt.current.length !== 0) {
+          await addMessage(threadId, recognizedTxt.current);
+          console.log("recognizedTxt: ", recognizedTxt.current);
+
+          ExpoSpeechRecognitionModule.start({
+            lang: "ko-KR",
+            continuous: true,
+            interimResults: true,
+          });
+          handleEventSource(assistantId, threadId, setChats);
+        }
+      }
     };
-  }, [isSpkMode, threadId, setChats, assistantId]);
+    submitChats();
+  }, [isSpkMode, assistantId, threadId, isRecord, setChats]);
 };

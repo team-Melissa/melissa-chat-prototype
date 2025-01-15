@@ -10,20 +10,25 @@ import { getDiscardThreadTime } from "@/utils/time";
 import { Chat, DiaryThread } from "@/app.types";
 import { useStt } from "../useStt";
 import { handleEventSource } from "@/utils/handleEventSource";
+import { Alert } from "react-native";
+import { ExpoSpeechRecognitionModule } from "expo-speech-recognition";
 
 export const useChat = () => {
   const [input, setInput] = useState<string>("");
   const [chats, setChats] = useState<Chat[]>([]);
   const [isSpkMode, setIsSpkMode] = useState<boolean>(false);
+  const [micPermission, setMicPermission] = useState<boolean>(true);
 
   const [assistantId, setAssistantId] = useState<string | null>(null);
   const [threadId, setThreadId] = useState<string | null>(null);
 
-  const btnText = isSpkMode
-    ? "음성 모드 끄기"
-    : input.length === 0
-    ? "음성 모드 켜기"
-    : "답변하기";
+  const btnText = (() => {
+    if (micPermission) {
+      if (isSpkMode) return "음성 모드 끄기";
+      else if (input.length === 0) return "음성 모드 켜기";
+    }
+    return "답변하기";
+  })();
 
   const handleInputChange = (text: string) => {
     setInput(text);
@@ -54,6 +59,20 @@ export const useChat = () => {
     // 어시스턴트 답변 수신
     handleEventSource(assistantId, threadId, setChats);
   };
+
+  useEffect(() => {
+    ExpoSpeechRecognitionModule.requestPermissionsAsync().then(
+      ({ granted }) => {
+        if (!granted) {
+          Alert.alert(
+            "음성 인식 권한 필요",
+            "음성 인식 권한이 없으면, 대화 모드를 사용할 수 없어요."
+          );
+          setMicPermission(false);
+        }
+      }
+    );
+  }, []);
 
   useEffect(() => {
     const initializeAssistantApi = async () => {
