@@ -16,6 +16,7 @@ export const useStt = (
   const recognizedTxt = useRef<string>("");
   const noSpkTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [isRecord, setIsRecord] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // 음성 인식 시작되면 isRecord를 true로 변경하는 훅
   useSpeechRecognitionEvent("start", () => {
@@ -62,7 +63,7 @@ export const useStt = (
 
   // 버튼으로 음성 인식 온오프를 위한 effect
   useEffect(() => {
-    if (isSpkMode) {
+    if (isSpkMode && !isLoading) {
       ExpoSpeechRecognitionModule.start({
         lang: "ko-KR",
         continuous: true,
@@ -71,7 +72,7 @@ export const useStt = (
     } else {
       ExpoSpeechRecognitionModule.stop();
     }
-  }, [isSpkMode]);
+  }, [isLoading, isSpkMode]);
 
   // 음성 모드에서 음성 인식이 마쳐졌을 때 Run 수행하는 effect
   useEffect(() => {
@@ -80,13 +81,7 @@ export const useStt = (
         if (!isRecord && recognizedTxt.current.length !== 0) {
           await addMessage(threadId, recognizedTxt.current);
           console.log("recognizedTxt: ", recognizedTxt.current);
-
-          ExpoSpeechRecognitionModule.start({
-            lang: "ko-KR",
-            continuous: true,
-            interimResults: true,
-          });
-          handleEventSource(assistantId, threadId, setChats);
+          handleEventSource(assistantId, threadId, setChats, setIsLoading);
         }
       }
     };

@@ -18,6 +18,7 @@ export const useChat = () => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [isSpkMode, setIsSpkMode] = useState<boolean>(false);
   const [micPermission, setMicPermission] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [assistantId, setAssistantId] = useState<string | null>(null);
   const [threadId, setThreadId] = useState<string | null>(null);
@@ -57,7 +58,7 @@ export const useChat = () => {
     await addMessage(threadId, input);
 
     // 어시스턴트 답변 수신
-    handleEventSource(assistantId, threadId, setChats);
+    handleEventSource(assistantId, threadId, setChats, setIsLoading);
   };
 
   useEffect(() => {

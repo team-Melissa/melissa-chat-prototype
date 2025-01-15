@@ -5,7 +5,8 @@ import EventSource from "react-native-sse";
 export const handleEventSource = (
   assistantId: string,
   threadId: string,
-  setChats: Dispatch<SetStateAction<Chat[]>>
+  setChats: Dispatch<SetStateAction<Chat[]>>,
+  setIsLoading: Dispatch<SetStateAction<boolean>>
 ) => {
   // 이벤트 스트림 열고 스트림 허용 상태로 run 수행
   const es = new EventSource<AssistantEvents>(
@@ -27,6 +28,7 @@ export const handleEventSource = (
 
   es.addEventListener("thread.message.created", () => {
     console.log("run 생성 완료! chat 데이터에 어시스턴트 필드 추가");
+    setIsLoading(true);
     setChats((prev) => [...prev, { role: "assistant", text: "" }]);
   });
 
@@ -51,6 +53,7 @@ export const handleEventSource = (
 
   es.addEventListener("done", () => {
     console.log("모든 run 수행 완료! 이벤트 리스너와 see 연결 해제");
+    setIsLoading(false);
     es.removeAllEventListeners();
     es.close();
   });
