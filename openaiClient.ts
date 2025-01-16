@@ -1,4 +1,7 @@
 import OpenAI from "openai";
+import * as FileSystem from "expo-file-system";
+import { Buffer } from "buffer";
+import { Audio } from "expo-av";
 
 const openai = new OpenAI({
   apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY,
@@ -57,6 +60,9 @@ export const addMessage = async (threadId: string, msg: string) => {
   });
 };
 
+/**
+ * @description 폴링 형태의 run 실행
+ */
 export const startRunByPolling = async (
   threadId: string,
   assistantId: string
@@ -72,6 +78,36 @@ export const startRunByPolling = async (
   } else {
     console.log(run.status);
     return null;
+  }
+};
+
+export const getTTS = async (text: string) => {
+  try {
+    console.log("tts 가져오기 시작");
+    const mp3 = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: "alloy",
+      input: text,
+    });
+    const bufferMp3 = await mp3.arrayBuffer();
+
+    const uri = FileSystem.cacheDirectory + Date.now().toString() + ".mp3";
+    await FileSystem.writeAsStringAsync(
+      uri,
+      Buffer.from(bufferMp3).toString("base64"),
+      {
+        encoding: FileSystem.EncodingType.Base64,
+      }
+    );
+
+    await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+    const { sound } = await Audio.Sound.createAsync(
+      { uri },
+      { shouldPlay: true }
+    );
+    await sound.playAsync();
+  } catch (e) {
+    console.error(e);
   }
 };
 
