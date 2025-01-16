@@ -57,4 +57,22 @@ export const addMessage = async (threadId: string, msg: string) => {
   });
 };
 
+export const startRunByPolling = async (
+  threadId: string,
+  assistantId: string
+) => {
+  console.log("run 실행 (polling 방식)");
+  const run = await openai.beta.threads.runs.createAndPoll(threadId, {
+    assistant_id: assistantId,
+  });
+
+  if (run.status === "completed") {
+    const { data } = await openai.beta.threads.messages.list(run.thread_id);
+    return data[0].content[0].text.value as string;
+  } else {
+    console.log(run.status);
+    return null;
+  }
+};
+
 export default openai;

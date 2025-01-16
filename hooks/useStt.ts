@@ -1,7 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { Chat } from "@/app.types";
-import { handleEventSource } from "@/utils/handleEventSource";
-import { addMessage } from "@/openaiClient";
+import { addMessage, startRunByPolling } from "@/openaiClient";
 import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
@@ -81,7 +80,10 @@ export const useStt = (
         if (!isRecord && recognizedTxt.current.length !== 0) {
           await addMessage(threadId, recognizedTxt.current);
           console.log("recognizedTxt: ", recognizedTxt.current);
-          handleEventSource(assistantId, threadId, setChats, setIsLoading);
+          const answer = await startRunByPolling(threadId, assistantId); // 통짜 텍스트를 받아와야 OpenAI로 TTS 요청 가능
+          if (answer) {
+            setChats((prev) => [...prev, { role: "assistant", text: answer }]);
+          }
         }
       }
     };
