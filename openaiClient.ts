@@ -1,7 +1,6 @@
 import OpenAI from "openai";
 import * as FileSystem from "expo-file-system";
 import { Buffer } from "buffer";
-import { Audio } from "expo-av";
 
 const openai = new OpenAI({
   apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY,
@@ -80,7 +79,7 @@ export const startRunByPolling = async (
   }
 };
 
-export const getTTS = async (text: string) => {
+export const getTTSUri = async (text: string) => {
   try {
     console.log("tts 가져오기 시작");
     const mp3 = await openai.audio.speech.create({
@@ -98,15 +97,10 @@ export const getTTS = async (text: string) => {
         encoding: FileSystem.EncodingType.Base64,
       }
     );
-
-    await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
-    const { sound } = await Audio.Sound.createAsync(
-      { uri },
-      { shouldPlay: true }
-    );
-    await sound.playAsync();
+    return uri;
   } catch (e) {
     console.error(e);
+    return null;
   }
 };
 

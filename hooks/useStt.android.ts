@@ -1,10 +1,11 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { Chat } from "@/app.types";
-import { addMessage, getTTS, startRunByPolling } from "@/openaiClient";
+import { addMessage, getTTSUri, startRunByPolling } from "@/openaiClient";
 import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
 } from "expo-speech-recognition";
+import { playTTS } from "@/utils/playTTS";
 
 export const useStt = (
   isSpkMode: boolean,
@@ -79,14 +80,17 @@ export const useStt = (
           console.log("recognizedTxt: ", recognizedTxt.current);
 
           const response = await startRunByPolling(threadId, assistantId); // 통짜 텍스트를 받아와야 OpenAI로 TTS 요청 가능
+
           if (response) {
-            await getTTS(response); // 지금은 여기에 TTS 재생 로직까지 함께 있음
+            const uri = await getTTSUri(response);
             setChats((prev) => [
               ...prev,
               { role: "assistant", text: response },
             ]);
+            if (uri) {
+              playTTS(uri, () => setIsLoading(false));
+            }
           }
-          setIsLoading(false);
         }
       }
     };
