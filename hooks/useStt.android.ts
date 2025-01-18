@@ -13,26 +13,31 @@ export const useStt = (
   setChats: Dispatch<SetStateAction<Chat[]>>
 ) => {
   const recognizedTxt = useRef<string>("");
-  const noSpkTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // 음성 인식 시작되면 isRecord를 true로 변경하는 훅
   useSpeechRecognitionEvent("start", () => {
-    console.log("음성 인식 켜짐");
+    console.log("안드로이드 음성 인식 시작");
     recognizedTxt.current = "";
   });
 
-  // 음성 인식 종료되면 isRecord를 false로 변경하는 훅
   useSpeechRecognitionEvent("end", () => {
-    console.log("음성 인식 꺼짐");
+    console.log("안드로이드 음성 인식 종료");
   });
 
-  // 음성 인식 결과가 날아오면 recognizedTxt에 반영하고, 기존 timeout을 제거하고, setChats에 반영하는 훅
+  // 사용자가 말 하다가 멈춘지 4초 지나면 실행되는 훅
+  useSpeechRecognitionEvent("speechend", () => {
+    console.log("안드로이드 말하기 종료");
+    setTimeout(() => {
+      setIsLoading(true);
+    }, 4000);
+  });
+
+  // 음성 인식 결과가 날아오면 recognizedTxt와 setChats에 반영하는 훅
   useSpeechRecognitionEvent("result", (event) => {
+    console.log("실시간 STT", event);
+
     if (event.results[0]?.transcript) {
       recognizedTxt.current = event.results[0]?.transcript;
-
-      if (noSpkTimerRef.current) clearTimeout(noSpkTimerRef.current);
 
       setChats((prev) =>
         prev[prev.length - 1].role === "assistant"
@@ -42,14 +47,6 @@ export const useStt = (
               { role: "user", text: event.results[0]?.transcript },
             ]
       );
-
-      // 최종 값(stop 후 터지는 이벤트)이 아닐 때만 새 setTimeout 추가하기
-      if (!event.isFinal) {
-        noSpkTimerRef.current = setTimeout(() => {
-          console.log("2초간 말을 멈춰 콜백 실행", noSpkTimerRef.current);
-          setIsLoading(true); // STT 끄고, 어시스턴트에게 전달하는 로직 실행 위해서
-        }, 2000);
-      }
     }
   });
 
@@ -58,6 +55,9 @@ export const useStt = (
   });
 
   // 버튼으로 음성 인식 온오프를 위한 effect
+  // - (사용자가 음성 모드로 접속했을 때 초기 음성인식 시작)
+  // - (사용자가 말을 안 해서 인식된 텍스트를 GPT로 보내려고 할 때 음성인식 종료)
+  // - (GPT의 응답을 수신하고, STT를 읽어준 뒤 다시 음성인식 시작)
   useEffect(() => {
     if (isSpkMode && !isLoading) {
       ExpoSpeechRecognitionModule.start({
@@ -79,7 +79,6 @@ export const useStt = (
           console.log("recognizedTxt: ", recognizedTxt.current);
 
           const response = await startRunByPolling(threadId, assistantId); // 통짜 텍스트를 받아와야 OpenAI로 TTS 요청 가능
-
           if (response) {
             await getTTS(response); // 지금은 여기에 TTS 재생 로직까지 함께 있음
             setChats((prev) => [
@@ -92,5 +91,5 @@ export const useStt = (
       }
     };
     submitChats();
-  }, [isSpkMode, assistantId, threadId, isLoading, setChats]);
+  }, [isSpkMode, assistantId, threadId, setChats, isLoading]);
 };

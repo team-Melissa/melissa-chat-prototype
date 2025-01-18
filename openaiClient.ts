@@ -76,8 +76,7 @@ export const startRunByPolling = async (
     const { data } = await openai.beta.threads.messages.list(run.thread_id);
     return data[0].content[0].text.value as string;
   } else {
-    console.log(run.status);
-    return null;
+    console.log(run.last_error?.message);
   }
 };
 
