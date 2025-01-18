@@ -5,8 +5,6 @@ import {
   getMelissaId,
   getMessageList,
   getNewThread,
-  getTTS,
-  startRunByPolling,
 } from "@/openaiClient";
 import { getDiscardThreadTime } from "@/utils/time";
 import { Chat, DiaryThread } from "@/app.types";

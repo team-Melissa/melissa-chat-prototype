@@ -30,7 +30,7 @@ export const useStt = (
     console.log("안드로이드 말하기 종료");
     setTimeout(() => {
       setIsLoading(true);
-    }, 4000);
+    }, 3000);
   });
 
   // 음성 인식 결과가 날아오면 recognizedTxt와 setChats에 반영하는 훅
