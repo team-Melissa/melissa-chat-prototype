@@ -1,4 +1,3 @@
-import EventSource from "react-native-sse";
 import { useEffect, useState } from "react";
 import { getThread, setThread } from "@/asyncStorage";
 import {
@@ -8,101 +7,73 @@ import {
   getNewThread,
 } from "@/openaiClient";
 import { getDiscardThreadTime } from "@/utils/time";
-
-type Chat = {
-  role: "assistant" | "user";
-  text: string;
-};
-
-type DiaryThread = {
-  threadId: string;
-  createdAt: number;
-};
-
-type AssistantEvents =
-  | "thread.run.created"
-  | "thread.run.queued"
-  | "thread.run.in_progress"
-  | "thread.run.step.created"
-  | "thread.run.step.in_progress"
-  | "thread.message.created"
-  | "thread.message.in_progress"
-  | "thread.message.delta"
-  | "thread.message.completed"
-  | "thread.run.step.completed"
-  | "thread.run.completed"
-  | "done";
+import { Chat, DiaryThread } from "@/app.types";
+import { useStt } from "../useStt";
+import { handleEventSource } from "@/utils/handleEventSource";
+import { Alert } from "react-native";
+import { ExpoSpeechRecognitionModule } from "expo-speech-recognition";
 
 export const useChat = () => {
   const [input, setInput] = useState<string>("");
   const [chats, setChats] = useState<Chat[]>([]);
+  const [isSpkMode, setIsSpkMode] = useState<boolean>(false);
+  const [micPermission, setMicPermission] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [assistantId, setAssistantId] = useState<string | null>(null);
   const [threadId, setThreadId] = useState<string | null>(null);
+
+  const btnText = (() => {
+    if (micPermission) {
+      if (isSpkMode) return "음성 모드 끄기";
+      else if (input.length === 0) return "음성 모드 켜기";
+    }
+    return "답변하기";
+  })();
 
   const handleInputChange = (text: string) => {
     setInput(text);
   };
 
+  const toggleSpkMode = () => {
+    setIsSpkMode((prev) => !prev);
+  };
+
+  const handleBtnClick = () => {
+    if (input.length === 0) {
+      toggleSpkMode();
+    } else {
+      handleInputSubmit();
+    }
+  };
+
   const handleInputSubmit = async () => {
     if (!threadId || !assistantId) return;
+
+    // state들에 반영
+    setInput("");
+    setChats((prev) => [...prev, { role: "user", text: input }]); // chats 변경 로직은 어디 모아두는게 나을지도? 아직 아닌가? 고민
 
     // 스레드에 메시지 추가
     await addMessage(threadId, input);
 
-    // state들에 반영
-    setInput("");
-    setChats((prev) => [...prev, { role: "user", text: input }]);
+    // 어시스턴트 답변 수신
+    handleEventSource(assistantId, threadId, setChats, setIsLoading);
+  };
 
-    // 이벤트 스트림 열고 스트림 허용 상태로 run 수행
-    const es = new EventSource<AssistantEvents>(
-      `https://api.openai.com/v1/threads/${threadId}/runs`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "OpenAI-Beta": "assistants=v2",
-          Authorization: `Bearer ${process.env.EXPO_PUBLIC_OPENAI_API_KEY}`,
-        },
-        method: "POST",
-        body: JSON.stringify({
-          assistant_id: assistantId,
-          stream: true,
-        }),
-        pollingInterval: 0,
+  useEffect(() => {
+    ExpoSpeechRecognitionModule.requestPermissionsAsync().then(
+      ({ granted }) => {
+        if (!granted) {
+          Alert.alert(
+            "음성 인식 권한 필요",
+            "음성 인식 권한이 없으면, 대화 모드를 사용할 수 없어요."
+          );
+          setMicPermission(false);
+        }
       }
     );
-
-    es.addEventListener("thread.message.created", () => {
-      console.log("run 생성 완료! chat 데이터에 어시스턴트 필드 추가");
-      setChats((prev) => [...prev, { role: "assistant", text: "" }]);
-    });
-
-    es.addEventListener("thread.message.delta", (event) => {
-      console.log("스트림 메시지 수신");
-      if (event.data) {
-        const data = JSON.parse(event.data);
-        setChats((prev) => {
-          const last = prev[prev.length - 1];
-          const newLast = {
-            ...last,
-            text: last.text + data.delta.content[0].text.value,
-          };
-          prev.pop();
-          return [...prev, newLast];
-        });
-      }
-    });
-
-    es.addEventListener("error", (error) => {
-      console.error("SSE Error:", error);
-    });
-
-    es.addEventListener("done", () => {
-      console.log("모든 run 수행 완료! 이벤트 리스너와 see 연결 해제");
-      es.removeAllEventListeners();
-      es.close();
-    });
-  };
+  }, []);
 
   useEffect(() => {
     const initializeAssistantApi = async () => {
@@ -140,5 +111,14 @@ export const useChat = () => {
     initializeAssistantApi();
   }, []);
 
-  return { input, chats, handleInputChange, handleInputSubmit };
+  useStt(isSpkMode, assistantId, threadId, setChats);
+
+  return {
+    input,
+    chats,
+    isSpkMode,
+    btnText,
+    handleInputChange,
+    handleBtnClick,
+  };
 };

@@ -10,14 +10,23 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.melissa-chat-prototype"
+      "bundleIdentifier": "com.anonymous.melissa-chat-prototype",
+      "infoPlist": {
+        "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to use speech recognition.",
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to use the microphone.",
+        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to use the Library"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.melissachatprototype"
+      "package": "com.anonymous.melissachatprototype",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -34,10 +43,35 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to use the microphone.",
+          "speechRecognitionPermission": "Allow $(PRODUCT_NAME) to use speech recognition.",
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox"
+          ]
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
+        }
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "509ca817-14e2-4c1f-a1a8-ad7490c1599b"
+      }
     }
   }
 }
